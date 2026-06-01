@@ -13,6 +13,7 @@ A complete FastAPI + React + PostgreSQL assessment project for managing products
 - PostgreSQL persistence through SQLAlchemy.
 - Responsive React dashboard.
 - Dockerfiles for frontend and backend.
+- Railway config for deploying the backend, frontend, and PostgreSQL on Railway.
 - Docker Compose for local full-stack execution.
 
 ## Local Setup
@@ -59,9 +60,15 @@ Copy-Item .env.example .env
 npm run dev
 ```
 
-## Manual Deployment Steps
+## Railway Deployment
 
-Use these values when your assessment form asks for links.
+Deploy the app as three Railway services in one project:
+
+- PostgreSQL database
+- FastAPI backend
+- React/nginx frontend
+
+Push this repository to GitHub before starting the Railway setup.
 
 ### 1. GitHub Repository Link
 
@@ -82,7 +89,72 @@ Paste this in the form:
 https://github.com/AtultTomar/inventory_manager
 ```
 
-### 2. Backend Docker Hub Image Link
+### 2. Create the Railway Project
+
+1. Open Railway and create a new project.
+2. Add a PostgreSQL database service.
+3. Add a backend service from your GitHub repo.
+4. Add a frontend service from the same GitHub repo.
+
+### 3. Backend Service Settings
+
+Set the backend service root directory to:
+
+```text
+backend
+```
+
+Railway will use `backend/railway.json`, which builds `backend/Dockerfile` and starts FastAPI on Railway's `$PORT`.
+
+Set these backend environment variables:
+
+```text
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+CORS_ORIGINS=http://localhost:3000,http://localhost:5173,https://YOUR_FRONTEND_DOMAIN
+```
+
+After the first backend deploy, open the backend service Networking tab and generate a public Railway domain. Your API base URL will be:
+
+```text
+https://YOUR_BACKEND_DOMAIN/api
+```
+
+### 4. Frontend Service Settings
+
+Set the frontend service root directory to:
+
+```text
+frontend
+```
+
+Railway will use `frontend/railway.json`, which builds `frontend/Dockerfile` and serves the React build with nginx on Railway's `$PORT`.
+
+Set this frontend environment variable:
+
+```text
+VITE_API_BASE_URL=https://YOUR_BACKEND_DOMAIN/api
+```
+
+Open the frontend service Networking tab and generate a public Railway domain.
+
+Then go back to the backend service and update `CORS_ORIGINS` so it includes the real frontend domain:
+
+```text
+CORS_ORIGINS=http://localhost:3000,http://localhost:5173,https://YOUR_FRONTEND_DOMAIN
+```
+
+Redeploy the backend after changing `CORS_ORIGINS`.
+
+### 5. Railway Notes
+
+- Do not add a custom start command. The Dockerfiles already define the correct commands.
+- The backend exposes `/health`.
+- The frontend writes `/config.js` at container startup, so changing `VITE_API_BASE_URL` in Railway does not require editing source code.
+- If the backend cannot connect to Postgres, verify `DATABASE_URL` points to the Railway PostgreSQL service.
+
+## Optional Docker Hub Image
+
+You only need this if your assessment specifically asks for a Docker Hub image link.
 
 Create a Docker Hub repository named `inventory-backend`, then run:
 
@@ -96,87 +168,6 @@ Paste this in the form:
 
 ```text
 https://hub.docker.com/r/YOUR_DOCKERHUB_USERNAME/inventory-backend
-```
-
-### 3. Hosted PostgreSQL
-
-Create a free PostgreSQL database on a provider such as Neon, Supabase, Render, or Railway.
-
-Copy the database connection string and use it as:
-
-```text
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
-```
-
-If your provider gives separate fields, paste them into the same format above. If the URL starts with `postgres://`, change it to `postgresql://`.
-
-### 4. Backend API Hosted URL
-
-Deploy the backend on a service that supports Docker or Python web services.
-
-For Railway, deploy the repository root normally. The included `railway.json` tells Railway to build `Dockerfile.railway`, which deploys the FastAPI backend from the `backend` folder.
-
-The Railway deploy healthcheck is disabled in `railway.json` because Railway can mark a deployment failed while the service is still being connected to a database or public domain. The app still exposes `/health` after deployment.
-
-Set these environment variables in the backend hosting dashboard:
-
-```text
-DATABASE_URL=your hosted postgres connection string
-CORS_ORIGINS=http://localhost:3000,https://YOUR_FRONTEND_DOMAIN
-```
-
-Do not use `start.sh` on Railway. If another host asks for a start command, use:
-
-```text
-uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
-
-After deployment, paste your backend URL:
-
-```text
-https://YOUR_BACKEND_DOMAIN
-```
-
-The API endpoints are under:
-
-```text
-https://YOUR_BACKEND_DOMAIN/api
-```
-
-If Railway shows `Unexposed service`, open the backend service, go to Settings or Networking, and generate a public Railway domain.
-
-### 5. Frontend Hosted URL
-
-Deploy the `frontend` folder on Vercel, Netlify, or Render Static Site.
-
-This repository includes `frontend/.env.production` with the current Railway backend API URL:
-
-```text
-VITE_API_BASE_URL=https://inventorymanager-production-6650.up.railway.app/api
-```
-
-If your Railway backend URL changes, update `frontend/.env.production`, commit, push, and redeploy Vercel.
-
-Set this environment variable in the frontend hosting dashboard:
-
-```text
-VITE_API_BASE_URL=https://YOUR_BACKEND_DOMAIN/api
-```
-
-Use these build settings:
-
-```text
-Root directory: frontend
-Build command: npm run build
-Publish directory: dist
-```
-
-After deployment, copy the frontend domain and update the backend `CORS_ORIGINS` variable to include it.
-
-Paste this in the form:
-
-```text
-https://YOUR_FRONTEND_DOMAIN
 ```
 
 ## Submission Checklist
