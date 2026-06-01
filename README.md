@@ -114,6 +114,8 @@ If your provider gives separate fields, paste them into the same format above. I
 
 Deploy the backend on a service that supports Docker or Python web services.
 
+For Railway, deploy the repository root normally. The included `railway.json` tells Railway to build `Dockerfile.railway`, which deploys the FastAPI backend from the `backend` folder.
+
 Set these environment variables in the backend hosting dashboard:
 
 ```text
@@ -121,7 +123,7 @@ DATABASE_URL=your hosted postgres connection string
 CORS_ORIGINS=http://localhost:3000,https://YOUR_FRONTEND_DOMAIN
 ```
 
-Use this start command if the host asks for one:
+Do not use `start.sh` on Railway. If another host asks for a start command, use:
 
 ```text
 uvicorn app.main:app --host 0.0.0.0 --port $PORT
