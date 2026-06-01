@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
-from app.database import init_db
+from app.database import check_db, init_db
 from app.routers import customers, orders, products
 
 
@@ -52,6 +52,16 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+
+@app.get("/api/db-health")
+def db_health_check():
+    if check_db():
+        return {"status": "healthy"}
+    return {
+        "status": "unavailable",
+        "detail": "Check the Railway DATABASE_URL variable on the backend service.",
+    }
 
 
 @app.get("/config.js", include_in_schema=False)
