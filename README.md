@@ -116,6 +116,8 @@ Deploy the backend on a service that supports Docker or Python web services.
 
 For Railway, deploy the repository root normally. The included `railway.json` tells Railway to build `Dockerfile.railway`, which deploys the FastAPI backend from the `backend` folder.
 
+The Railway deploy healthcheck is disabled in `railway.json` because Railway can mark a deployment failed while the service is still being connected to a database or public domain. The app still exposes `/health` after deployment.
+
 Set these environment variables in the backend hosting dashboard:
 
 ```text
@@ -140,6 +142,8 @@ The API endpoints are under:
 ```text
 https://YOUR_BACKEND_DOMAIN/api
 ```
+
+If Railway shows `Unexposed service`, open the backend service, go to Settings or Networking, and generate a public Railway domain.
 
 ### 5. Frontend Hosted URL
 
