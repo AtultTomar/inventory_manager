@@ -149,6 +149,14 @@ If Railway shows `Unexposed service`, open the backend service, go to Settings o
 
 Deploy the `frontend` folder on Vercel, Netlify, or Render Static Site.
 
+This repository includes `frontend/.env.production` with the current Railway backend API URL:
+
+```text
+VITE_API_BASE_URL=https://inventorymanager-production-6650.up.railway.app/api
+```
+
+If your Railway backend URL changes, update `frontend/.env.production`, commit, push, and redeploy Vercel.
+
 Set this environment variable in the frontend hosting dashboard:
 
 ```text
