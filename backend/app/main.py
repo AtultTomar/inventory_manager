@@ -16,6 +16,7 @@ static_dir = Path(__file__).resolve().parent.parent / "static"
 index_file = static_dir / "index.html"
 assets_dir = static_dir / "assets"
 config_file = static_dir / "config.js"
+serve_frontend = settings.serve_frontend and index_file.exists()
 
 
 @asynccontextmanager
@@ -38,13 +39,13 @@ app.include_router(products.router, prefix="/api/products", tags=["Products"])
 app.include_router(customers.router, prefix="/api/customers", tags=["Customers"])
 app.include_router(orders.router, prefix="/api/orders", tags=["Orders"])
 
-if assets_dir.exists():
+if serve_frontend and assets_dir.exists():
     app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
 
 @app.get("/")
 def root():
-    if index_file.exists():
+    if serve_frontend:
         return FileResponse(index_file)
     return {"message": "Inventory Order API is running", "docs": "/docs"}
 
@@ -66,7 +67,7 @@ def db_health_check():
 
 @app.get("/config.js", include_in_schema=False)
 def frontend_config():
-    if config_file.exists():
+    if serve_frontend and config_file.exists():
         return FileResponse(config_file, media_type="application/javascript")
     return {"VITE_API_BASE_URL": "/api"}
 
@@ -74,8 +75,8 @@ def frontend_config():
 @app.get("/{full_path:path}", include_in_schema=False)
 def spa_fallback(full_path: str):
     requested_file = static_dir / full_path
-    if requested_file.is_file():
+    if serve_frontend and requested_file.is_file():
         return FileResponse(requested_file)
-    if index_file.exists():
+    if serve_frontend:
         return FileResponse(index_file)
     return {"message": "Inventory Order API is running", "docs": "/docs"}

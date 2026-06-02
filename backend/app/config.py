@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg2://inventory_user:change_this_password@db:5432/inventory_db"
     cors_origins: str = "http://localhost:3000,http://localhost:5173,http://localhost:8080"
     environment: str = "development"
+    serve_frontend: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
